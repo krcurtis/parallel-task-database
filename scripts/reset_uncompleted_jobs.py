@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright 2018 Fred Hutchinson Cancer Research Center
 ################################################################################
 ### Reset uncompleted jobs, so that workers can 'see' them, and process
@@ -12,21 +14,7 @@ import datetime
 import numpy as np
 import pymongo
 
-################################################################################
-
-DATABASE_ACCESS_FILE = os.path.join(os.environ['HOME'], '.mydb_gizmo_database')
-
-def get_access(filename):
-    access_mode = os.stat(DATABASE_ACCESS_FILE).st_mode
-    if access_mode & (stat.S_IRWXG | stat.S_IRWXO) != 0:
-        raise Exception("ERROR database access file has permissions for group or other")
-
-    pw = open(DATABASE_ACCESS_FILE).readline().strip('\n')
-    return pw
-
-
-
-MONGO_URI = "mongodb://db_write:" + get_access(DATABASE_ACCESS_FILE) + "@mydb:32069"
+from parallel_task_database import mongo_uri
 
 ################################################################################
 
@@ -78,8 +66,8 @@ parser.add_argument('--reset_failed',  help='reset jobs that are marked as faile
 parser.add_argument('-d', '--database', help='mongoDB database or collection', default="gecco_tasks")
 args = parser.parse_args()
 
-
-client = pymongo.MongoClient(MONGO_URI)
+uri = mongo_uri()
+client = pymongo.MongoClient(uri)
 db = client[args.database]
 
 now = datetime.datetime.utcnow()

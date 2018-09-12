@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright 2018 Fred Hutchinson Cancer Research Center
 ################################################################################
 ### check job status
@@ -13,23 +15,10 @@ import numpy as np
 import pymongo
 import tabulate
 
-################################################################################
-
-DATABASE_ACCESS_FILE = os.path.join(os.environ['HOME'], '.mydb_gizmo_database')
-
-def get_access(filename):
-    access_mode = os.stat(DATABASE_ACCESS_FILE).st_mode
-    if access_mode & (stat.S_IRWXG | stat.S_IRWXO) != 0:
-        raise Exception("ERROR database access file has permissions for group or other")
-
-    pw = open(DATABASE_ACCESS_FILE).readline().strip('\n')
-    return pw
-
-
-
-MONGO_URI = "mongodb://db_write:" + get_access(DATABASE_ACCESS_FILE) + "@mydb.fredhutch.org:32069"
+from parallel_task_database import mongo_uri
 
 ################################################################################
+
 
 
 
@@ -147,8 +136,8 @@ parser.add_argument('--list-queues', help='if specified, will only list possible
 parser.add_argument('-d', '--database', help='mongoDB database', default="gecco_tasks")
 args = parser.parse_args()
 
-
-client = pymongo.MongoClient(MONGO_URI)
+uri = mongo_uri()
+client = pymongo.MongoClient(uri)
 if args.list_queues:
     results = get_database_queues(client)
     print(tabulate.tabulate(results, headers=['Queue', 'n_tasks']))

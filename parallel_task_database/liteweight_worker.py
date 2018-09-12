@@ -18,22 +18,12 @@ import pymongo
 import numpy as np
 
 
+from .mongo_uri import mongo_uri
+
 
 ################################################################################
 
-DATABASE_ACCESS_FILE = os.path.join(os.environ['HOME'], '.mydb_gizmo_database')
 
-def get_access(filename):
-    access_mode = os.stat(DATABASE_ACCESS_FILE).st_mode
-    if access_mode & (stat.S_IRWXG | stat.S_IRWXO) != 0:
-        raise Exception("ERROR database access file has permissions for group or other")
-
-    pw = open(DATABASE_ACCESS_FILE).readline().strip('\n')
-    return pw
-
-
-
-MONGO_URI = "mongodb://db_write:" + get_access(DATABASE_ACCESS_FILE) + "@mydb.fredhutch.org:32069"
 
 ################################################################################
 
@@ -57,14 +47,14 @@ def invoke_system(cmd_params, log_to_file=None):
 
 
 
-def get_job_params(database):
+def get_job_params(database, uri):
     found_task = False
     while not found_task:
         delay = np.random.randint(1, 10, dtype='int32')
         time.sleep(delay)
 
         print('Connecting...')
-        client = pymongo.MongoClient(MONGO_URI)
+        client = pymongo.MongoClient(uri)
         db = client[database]
 
         potential_task =  db.tasks.find_one({'processing':False})
@@ -92,8 +82,8 @@ def get_job_params(database):
     return None
 
 
-def close_job_params(database, job_params, success):
-    client = pymongo.MongoClient(MONGO_URI)
+def close_job_params(database, job_params, success, uri):
+    client = pymongo.MongoClient(uri)
     db = client[database]
     update = copy.copy(job_params)
     update['success'] = success
@@ -107,9 +97,10 @@ def close_job_params(database, job_params, success):
 
 
 
-def main_loop(app_func, database):
+def main_loop(app_func, database, mongo_database_file=os.path.join(os.environ['HOME'], '.mongo_database')):
+    uri = mongo_uri(mongo_database_file)
     print('Starting main loop')
-    job_params = get_job_params(database)
+    job_params = get_job_params(database, uri)
     if None == job_params:
         print("No job found")
         sys.exit(0)
@@ -120,6 +111,6 @@ def main_loop(app_func, database):
         result = False
         print(traceback.format_exc())
 
-    close_job_params(database, job_params, result)
+    close_job_params(database, job_params, result, uri)
     if result:
         print("DONE[" + str(job_params) + "]")
