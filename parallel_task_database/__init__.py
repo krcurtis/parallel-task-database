@@ -8,3 +8,18 @@ functions to manage tasks that are being run by jobs/workers running on a cluste
 from .mongo_uri import *
 from .liteweight_worker import *
 
+
+def populate_database(payloads, database, uri):
+    client = pymongo.MongoClient(uri)
+    db = client[database]
+    for payload in payloads:
+        print(payload)
+        db.tasks.insert_one( {'payload':payload, 'processing':False})
+
+
+def populate_database_cleanly(payloads, database, uri):
+    client = pymongo.MongoClient(uri)
+    db = client[database]
+    db.tasks.delete_many({})
+    for payload in payloads:
+        db.tasks.insert_one( {'payload':payload, 'processing':False})

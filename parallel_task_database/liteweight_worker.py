@@ -89,10 +89,12 @@ def close_job_params(database, job_params, success, uri):
     update['success'] = success
     update['stop'] = datetime.datetime.utcnow()
     result = db.tasks.replace_one(job_params, update)
+
+    print(update)
     if 1 == result.matched_count and 1 == result.modified_count:
         print('Successfully updated database')
     else:
-        print('Error in database update', update)
+        raise Exception('Error in database update:' + str(update))
 
 
 
@@ -107,7 +109,6 @@ def main_loop(app_func, database, mongo_database_file=os.path.join(os.environ['H
     try:
         result = app_func(job_params)
     except Exception:
-        # todo print stack trace ...
         result = False
         print(traceback.format_exc())
 
