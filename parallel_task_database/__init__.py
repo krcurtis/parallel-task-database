@@ -23,3 +23,13 @@ def populate_database_cleanly(payloads, database, uri):
     db.tasks.delete_many({})
     for payload in payloads:
         db.tasks.insert_one( {'payload':payload, 'processing':False})
+
+
+def get_task_collection_stats(client):
+    results = []
+    for name in client.database_names():
+        if name != "admin" and name != "local":
+            db = client[name]
+            n = db.tasks.count({})
+            results.append((name, n))
+    return results

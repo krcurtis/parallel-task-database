@@ -16,6 +16,7 @@ import pymongo
 import tabulate
 
 from parallel_task_database import mongo_uri
+from parallel_task_database import get_task_collection_stats
 
 ################################################################################
 
@@ -121,26 +122,17 @@ def old_display_stats(records):
 
 
 
-def get_database_queues(client):
-    results = []
-    for name in client.database_names():
-        if name != "admin" and name != "local":
-            db = client[name]
-            n = db.tasks.count({})
-            results.append((name, n))
-    return results
-
 
 parser = argparse.ArgumentParser(description='View summary stats tasks in database')
-parser.add_argument('--list-queues', help='if specified, will only list possible job queues in the mongoDB database', default=False, action='store_true')
+parser.add_argument('--list-queues', help='if specified, will only list possible task collections in the mongoDB database', default=False, action='store_true')
 parser.add_argument('-d', '--database', help='mongoDB database', default="gecco_tasks")
 args = parser.parse_args()
 
 uri = mongo_uri()
 client = pymongo.MongoClient(uri)
 if args.list_queues:
-    results = get_database_queues(client)
-    print(tabulate.tabulate(results, headers=['Queue', 'n_tasks']))
+    results = get_task_collection_stats(client)
+    print(tabulate.tabulate(results, headers=['Task collection', 'n_tasks']))
 
 else:
     db = client[args.database]
