@@ -29,7 +29,7 @@ from .mongo_uri import mongo_uri
 
 def invoke_system(cmd_params, log_to_file=None):
     cmd = ' '.join(cmd_params)
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
     out_msg, err_msg = p.communicate()
     print("stdout:", out_msg)
     print("stderr:", err_msg)
