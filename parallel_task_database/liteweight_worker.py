@@ -110,7 +110,10 @@ def main_loop(app_func, database, mongo_database_file=os.path.join(os.environ['H
         result = app_func(job_params)
     except Exception:
         result = False
-        print(traceback.format_exc())
+        try:
+            print(traceback.format_exc())   # yes this can actually fail with UnicodeEncodeError, why??
+        except Exception:
+            print("ERROR traceback on exception failed!!")
 
     close_job_params(database, job_params, result, uri)
     if result:
