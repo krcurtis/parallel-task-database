@@ -63,6 +63,7 @@ def get_unprocessed_count(db):
 parser = argparse.ArgumentParser(description='View summary stats (and adjust) tasks in database')
 parser.add_argument('-r', '--reset_jobs',  help='reset jobs that appear uncompleted', default=False, action='store_true')
 parser.add_argument('--reset_failed',  help='reset jobs that are marked as failed', default=False, action='store_true')
+parser.add_argument('--reset_after', help='reset jobs started on and after a date year-month-day')
 parser.add_argument('-d', '--database', help='mongoDB database or collection', default="gecco_tasks")
 args = parser.parse_args()
 
@@ -101,7 +102,7 @@ if args.reset_jobs:
         match_task = { '_id': i['_id'] }
         result = db.tasks.replace_one(match_task, revised)
         if 1 != result.modified_count:
-            print("ERROR replace failed for ", i)
+            raise Exception("ERROR replace failed for {i}".format(i=i))
 
 elif args.reset_failed:
     print('Reseting failed jobs')
@@ -110,7 +111,20 @@ elif args.reset_failed:
         match_task = { '_id': i['_id'] }
         result = db.tasks.replace_one(match_task, revised)
         if 1 != result.modified_count:
-            print("ERROR replace failed for ", i)
+            raise Exception("ERROR replace failed for {i}".format(i=i))
+
+elif None != args.reset_after:
+    year,month,day = args.reset_after.split("-")
+    t = datetime.datetime(int(year), int(month), int(day))
+    items_after = [workitem for workitem in items if workitem['start'] > t]
+    for i in items_after:
+        revised =  trim_unsuccessful_job(i)
+        match_task = { '_id': i['_id'] }
+        result = db.tasks.replace_one(match_task, revised)
+        if 1 != result.modified_count:
+            raise Exception("ERROR replace failed for {i}".format(i=i))
+    print("Update {n} items".format(n=len(items_after)))
+
 
 else:
     print('Total:', len(items))
