@@ -61,7 +61,7 @@ def is_overdue(workitem, reference_time, mean_run_time, std_dev):
 
 
 def get_unprocessed_count(db):
-    return db.tasks.count({"processing":False})
+    return db.tasks.count_documents({"processing":False})
 
 
 def display_stats(records):

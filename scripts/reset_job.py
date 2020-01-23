@@ -58,10 +58,10 @@ def is_overdue(workitem, reference_time, mean_run_time, std_dev):
 
 
 def get_unprocessed_count(db):
-    return db.tasks.count({"processing":False})
+    return db.tasks.count_documents({"processing":False})
 
 parser = argparse.ArgumentParser(description='View summary stats (and adjust) tasks in database')
-parser.add_argument('-r', '--reset_jobs',  help='reset jobs that appear uncompleted', default=False, action='store_true')
+parser.add_argument('--reset_stalled',  help='reset jobs that appear uncompleted', default=False, action='store_true')
 parser.add_argument('--reset_failed',  help='reset jobs that are marked as failed', default=False, action='store_true')
 parser.add_argument('--reset_after', help='reset jobs started on and after a date year-month-day')
 parser.add_argument('-d', '--database', help='mongoDB database or collection', default="gecco_tasks")
@@ -95,8 +95,8 @@ overdue = [i for i in items if is_overdue(i, now, mean_run_time, sigma)]
 
 
 
-if args.reset_jobs:
-    print('Reseting uncompleted/unsuccessful jobs')
+if args.reset_stalled:
+    print('Reseting uncompleted/unsuccessful (stalled) jobs')
     for i in reset_items:
         revised =  trim_unsuccessful_job(i)
         match_task = { '_id': i['_id'] }

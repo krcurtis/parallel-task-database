@@ -5,6 +5,7 @@ functions to manage tasks that are being run by jobs/workers running on a cluste
 
 # This file is to tell setuptools that this directory is a package
 
+import os
 from .mongo_uri import *
 from .liteweight_worker import *
 
@@ -33,3 +34,8 @@ def get_task_collection_stats(client):
             n = db.tasks.count({})
             results.append((name, n))
     return results
+
+
+def make_dependent_directory(filename):
+    direc = os.path.dirname(filename)
+    os.system("mkdir -p " + direc)

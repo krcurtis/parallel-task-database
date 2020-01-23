@@ -25,6 +25,6 @@ setup(name='parallel_task_database',
       scripts = [ 
           "scripts/check_job_status.py",
           "scripts/clear_database_jobs.py",
-          "scripts/reset_uncompleted_jobs.py"
+          "scripts/reset_job.py"
       ]
       )
