@@ -35,6 +35,14 @@ def get_task_collection_stats(client):
             results.append((name, n))
     return results
 
+def to_datetime(time_text):
+    standard, field = time_text.split(".")
+    fraction_seconds = field.split(" UTC")[0]
+    if len(fraction_seconds) > 6:
+       fraction_seconds = fraction_seconds[:6]
+    return datetime.datetime.strptime(standard + "." + fraction_seconds + " UTC", "%Y-%m-%d %H:%M:%S.%f UTC")
+
+
 
 def make_dependent_directory(filename):
     direc = os.path.dirname(filename)

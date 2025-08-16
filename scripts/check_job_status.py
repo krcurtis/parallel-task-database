@@ -17,16 +17,9 @@ import tabulate
 
 from parallel_task_database import mongo_uri
 from parallel_task_database import get_task_collection_stats
+from parallel_task_database import to_datetime
 
 ################################################################################
-
-
-def to_datetime(time_text):
-    standard, field = time_text.split(".")
-    fraction_seconds = field.split(" UTC")[0]
-    if len(fraction_seconds) > 6:
-       fraction_seconds = fraction_seconds[:6]
-    return datetime.datetime.strptime(standard + "." + fraction_seconds + " UTC", "%Y-%m-%d %H:%M:%S.%f UTC")
 
 
 

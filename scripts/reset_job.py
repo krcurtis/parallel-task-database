@@ -15,6 +15,7 @@ import numpy as np
 import pymongo
 
 from parallel_task_database import mongo_uri
+from parallel_task_database import to_datetime
 
 ################################################################################
 
@@ -74,6 +75,13 @@ db = client[args.database]
 now = datetime.datetime.utcnow()
 
 items = [i for i in db.tasks.find()]
+# convert from time string to Python datetime objects
+for obj in items:
+    if "start" in obj:
+        obj["start"] = to_datetime(obj["start"])
+    if "stop" in obj:
+        obj["stop"] = to_datetime(obj["stop"])
+
 completed = [ i for i in items if "stop" in i]
 #unsuccesful_items = [ i for i in items if is_redo(i)]
 unfinished_items = [ i for i in items if not is_successful(i) and not is_processing(i) ]
