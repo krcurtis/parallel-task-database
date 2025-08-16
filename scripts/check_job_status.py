@@ -21,6 +21,13 @@ from parallel_task_database import get_task_collection_stats
 ################################################################################
 
 
+def to_datetime(time_text):
+    standard, field = time_text.split(".")
+    fraction_seconds = field.split(" UTC")[0]
+    if len(fraction_seconds) > 6:
+       fraction_seconds = fraction_seconds[:6]
+    return datetime.datetime.strptime(standard + "." + fraction_seconds + " UTC", "%Y-%m-%d %H:%M:%S.%f UTC")
+
 
 
 def elapsed(workitem):
@@ -71,6 +78,15 @@ def get_and_display_stats(db):
     now = datetime.datetime.utcnow()
 
     items = [i for i in db.tasks.find()]
+
+    # convert from time string to Python datetime objects
+    for obj in items:
+        if "start" in obj:
+            obj["start"] = to_datetime(obj["start"])
+        if "stop" in obj:
+            obj["stop"] = to_datetime(obj["stop"])
+
+    
     completed = [ i for i in items if "stop" in i]
     #unsuccesful_items = [ i for i in items if is_redo(i)]
     unfinished_items = [ i for i in items if not is_successful(i) and not is_processing(i) ]

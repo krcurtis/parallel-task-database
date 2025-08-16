@@ -46,6 +46,8 @@ def invoke_system(cmd_params, log_to_file=None):
 ################################################################################
 
 
+def from_datetime(d):
+    return d.strftime("%Y-%m-%d %H:%M:%S.%f UTC")
 
 def get_job_params(database, uri):
     found_task = False
@@ -65,7 +67,7 @@ def get_job_params(database, uri):
         update = copy.copy(potential_task)
         update['processing'] = True
         update['jobid'] = os.environ['SLURM_JOBID']
-        update['start'] = datetime.datetime.utcnow()
+        update['start'] = from_datetime(datetime.datetime.utcnow())
         match_task = OrderedDict()
         match_task['_id'] = potential_task['_id']  # required for python3 why?
         match_task['processing'] = False
@@ -87,7 +89,7 @@ def close_job_params(database, job_params, success, uri):
     db = client[database]
     update = copy.copy(job_params)
     update['success'] = success
-    update['stop'] = datetime.datetime.utcnow()
+    update['stop'] = from_datetime(datetime.datetime.utcnow())
     result = db.tasks.replace_one(job_params, update)
 
     print(update)
